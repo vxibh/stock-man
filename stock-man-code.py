@@ -1,30 +1,53 @@
-import yfinance as yf
-import streamlit as st
+import yfinance as yf #library for Stock Data
+import streamlit as st #StreamLit library
+from google_images_search import GoogleImagesSearch #Google Search Engine library
 
 st.write("""
 # Stock-Man 
        
-Shown are the stock **closing price** and **volume** of Google!
+Shown are the stock **closing price** and **volume** of the chosen company!
 
 """)
 
-#defining ticker symbol
-tickerSymbol = 'GOOGL'
-#getting data
-tickerData = yf.Ticker(tickerSymbol)
-#get the historical prices for this ticker
-tickerDf = tickerData.history(period='1d', start='2010-5-31', end='2020-5-31')
-# Open	High	Low	Close	Volume	Dividends	Stock Splits
+# Defining ticker symbol
+tickerSymbol = st.text_input("Enter the company's name (e.g., TSLA):")
 
-st.write("""
-## Closing Price
-""")
-st.line_chart(tickerDf.Close)
-st.write("""
-## Volume Price
-""")
-st.line_chart(tickerDf.Volume)
+if st.button("Show Graphs"):
+    # Getting data
+    tickerData = yf.Ticker(tickerSymbol)
 
-st.write(""" 
-###### Vaibhav Sharma
-""")
+    # Checking if the input is not empty and the data is available
+    if tickerSymbol and tickerData:
+        # retrieve data
+        tickerDf = tickerData.history(period='1d', start='2010-5-31', end='2020-5-31')
+
+        # Searching logo for the company
+        company_logo = {
+            'q': tickerSymbol + ' logo',  # Search query using the company name and "logo" keyword
+            'num': 1,                      # Number of images to fetch
+            'fileType': 'png',
+        }
+
+        # Perform Google image search for the company's logo
+        gis = GoogleImagesSearch("AIzaSyC3sxaKXEtuibak-NeWtOdToLYgI3sWXTg", "41abd66df595642b6")
+        gis.search(search_params=company_logo)
+        image_result = gis.results()[0].url
+
+        # Displaying the company logo and name using the fetched image
+        st.markdown(
+            f'<img src="{image_result}" alt="{tickerSymbol} logo" style="width: 150px;">',
+            unsafe_allow_html=True
+        )
+        
+        #closing graph
+        st.write("""
+        ## Closing Price
+        """)
+        st.line_chart(tickerDf.Close)
+
+        #volume graph
+        st.write("""
+        ## Volume Price
+        """)
+        st.line_chart(tickerDf.Volume)
+
